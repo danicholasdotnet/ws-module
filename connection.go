@@ -19,7 +19,7 @@ func (c *Connection) Write(mt int, payload []byte) error {
 	return c.WS.WriteMessage(mt, payload)
 }
 
-func (c *Connection) ReadLoop(h *Hub, han Handlers) {
+func (c *Connection) ReadLoop(h *Hub) {
 	defer func() {
 		c.UnregisterAll(h)
 		c.WS.Close()
@@ -61,11 +61,11 @@ func (c *Connection) ReadLoop(h *Hub, han Handlers) {
 		c.UpdateSubs(h, p.Interests)
 
 		// use the relevant handler for the event
-		handler := han[p.Event.Name]
+		handler := HandlersArray[p.Event.Name]
 		if handler == nil {
 			log.Println("EVENT SENT DID NOT HAVE A HANDLER ASSOCIATED")
 			log.Println("event name in sent packet:", p.Event.Name)
-			log.Println("events that are registered:", han)
+			log.Println("events that are registered:", HandlersArray)
 		} else {
 			// construct outgoing message based on incoming packet
 			m, err := handler(p, c)
